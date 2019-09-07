@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd" default-autowire="byName">
+    
+    <!-- 扫描注解 -->    
+    <context:component-scan base-package="com.hbu.service.impl"></context:component-scan>
+    <!-- 扫描软编码 ,加载属性文件-->
+    <context:property-placeholder location="classpath:db.properties"/>
+    <!-- 数据源 -->
+	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">	
+		<property name="driverClassName" value="${jdbc.driver}"></property>
+		<property name="url" value="${jdbc.url}"></property>
+		<property name="username" value="${jdbc.username}"></property>
+		<property name="password" value="${jdbc.password}"></property>
+	</bean>
+	
+   <!-- 创建SqlSessionFactory对象 -->
+    <bean id="factory" class="org.mybatis.spring.SqlSessionFactoryBean">
+    	<!-- 数据库连接信息来源于dataSource -->
+    	<!-- <property name="dataSource" ref="dataSource"></property> 因为上面设置了自动注入，所以不要了-->
+    	<property name="typeAliasesPackage" value="com.hbu.pojo"></property>
+    </bean>
+    
+    <!-- 扫描器相当于mybatis.xml中 mappers下package标签,扫描com.bjsxt.mapper包后会给对应接口创建对象-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+    	<!-- 要扫描哪个包 -->
+    	<property name="basePackage" value="com.hbu.mapper"></property>
+    	<!-- 和factory产生关系 -->
+    	<!-- <property name="sqlSessionFactory" ref="factory"></property> -->
+    	<property name="sqlSessionFactoryBeanName" value="factory"></property>   	
+    </bean>
+    
+    <!-- 事务管理器 -->
+    <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+    	<property name="dataSource" ref="dataSource"></property>
+    </bean>
+    <!-- 声明式事务 -->
+    <tx:advice id="txAdvice" transaction-manager="txManager">
+    	<tx:attributes>
+    		<!-- 哪些方法需要事务控制 -->
+    		<!-- 支持通配符 -->
+    		<tx:method name="ins*" read-only="false"/>
+    		<tx:method name="del*"/>
+    		<tx:method name="upd*"/>
+    		<tx:method name="*" read-only="false"/>
+    	</tx:attributes>
+    </tx:advice>
+	<!-- 配置Aop -->
+	<aop:config>
+		<aop:pointcut expression="execution(* com.hbu.service.impl.*.*(..))" id="mypoint"/>
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="mypoint"/>
+	</aop:config>
+
+</beans>
