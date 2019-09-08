@@ -184,6 +184,7 @@
       <version>1.9.4</version>
     </dependency>
   </dependencies>
+  <!--配 置 tomcat 插 件 -->
   <build>
     <plugins>
       <plugin>
@@ -195,5 +196,21 @@
         </configuration>
       </plugin>
     </plugins>
+    <!--配 置 资 源 拷 贝 插 件 -->
+    <resources>
+      <resource>
+        <directory>src/main/java</directory>
+        <includes>
+          <include>**/*.xml</include>
+        </includes>
+      </resource>
+      <resource>
+        <directory>src/main/resources</directory>
+        <includes>
+          <include>**/*.xml</include>
+          <include>**/*.properties</include>
+        </includes>
+      </resource>
+    </resources>
   </build>
 </project>
